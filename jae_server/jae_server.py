@@ -16,8 +16,9 @@ class JaeServer:
 
     def run(self):
         self.sock.listen()
-        print("Listening for clients")
         while True:
             client, addr = self.sock.accept()
             print("Client Connected")
+            print(client)
+            print(addr)
             threading.Thread(target=self.thread_func, args=(client, addr)).start()

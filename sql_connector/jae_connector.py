@@ -1,4 +1,5 @@
 import mysql.connector
+import MySQLdb # need to use this library, reason: speed
 
 
 class aedb_connector:
@@ -16,21 +17,26 @@ class aedb_connector:
 
     def connect(self):
         self.cnx = mysql.connector.connect(**self.config)
-        ''' if self.cnx is not None:
-            print("Connection Established")
-        else:
-            print("Connection was not Established")'''
         self.cursor = self.cnx.cursor()
 
     def user_login(self, acc_name, acc_pw):
-        query = "SELECT aethor_account_password FROM aethor_users WHERE aethor_account_name = %s"
+        query = "SELECT aethor_password, aethor_account_id FROM aethor_accounts WHERE aethor_username = %s"
         self.cursor.execute(query, (acc_name, ))
-        for(aethor_account_password, ) in self.cursor:
+        for(aethor_account_password, aethor_account_id, ) in self.cursor:
             if acc_pw == aethor_account_password:
-                return True
+                return (True, aethor_account_id)
             else:
-                return False
-        return False
+                return (False, -1)
+        return (False, -1)
+
+    def getAccountCharacters(self, account_id):
+        query = "SELECT * FROM aethor_characters WHERE aethor_account_id = %s"
+        characters = []
+        self.cursor.execute(query, (account_id, ))
+        for( acid, aaid, name, ac, armor, ) in self.cursor:
+            characters.append({'character_id':acid, 'name': name, 'aethor_class': ac, 'armor': armor})
+        return characters
+
 
     def close(self):
         self.cursor.close()

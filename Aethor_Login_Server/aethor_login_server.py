@@ -11,7 +11,7 @@ class AethorLoginServer(JaeServer):
         self.run()
 
     def message_receive(self, client, address):
-        adbc = aedb_connector()
+        adbc = aedb_connector('localhost', 'root', '!aethor_josh_0987!', 'aethor', 3306)
         adbc.connect()
         while True:
             try:
@@ -20,14 +20,17 @@ class AethorLoginServer(JaeServer):
                 message = data.decode('utf-8')
                 print(message)
                 message = json.loads(message)
-                message["aethor_login_result"] = adbc.user_login(message["aethor_username"], message["aethor_password"])
+                account_info = adbc.user_login(message["aethor_username"], message["aethor_password"])
+                message["aethor_login_result"] = account_info[0]
+                message["aethor_account_id"] = account_info[1]
                 message = json.dumps(message)
                 #Need to re-encode the string/dictionary before we send back to the client
                 message = message.encode('utf-8')
+                print(message)
                 client.sendall(message)
-            except:
+            except Exception as e:
+                #print(e)
                 client.close()
                 adbc.close()
-
 
 ACS = AethorLoginServer()
